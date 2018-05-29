@@ -41,8 +41,8 @@ def names():
     conn = engine.connect()
     query = "select * from samples"
     resultset = conn.execute(query).keys()
-    final_result = resultset[1:]
-    return jsonify(final_result)
+    names = resultset[1:]
+    return jsonify(names)
 
 @app.route('/otu')
 def otu():
@@ -71,6 +71,14 @@ def wfreq(sample):
     return str(resultset.loc[resultset.index[0], 'WFREQ'])
 
 @app.route('/samples/<sample>')
+def samples(sample):
+    conn = engine.connect()
+    query = (f"select otu_id,{sample} from samples where {sample} >0 order by {sample} desc")
+    resultset = pd.read_sql(query,conn)
+    otu_ids = resultset['otu_id'].tolist()
+    sample_values = resultset[sample].tolist()
+    result =[{"otu_ids":otu_ids ,"sample_values":sample_values }]
+    return jsonify(result)
 
 # create route that renders index.html template
 @app.route("/")
